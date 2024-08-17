@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 import { Octokit } from "octokit";
 const orgs = process.argv;
+<<<<<<< HEAD
 const octokit = new Octokit({});
+=======
+const octokit = new Octokit({
+  auth: process.env.GIT_TOKEN,
+});
+>>>>>>> 5335d93 (added github-recent-activity project)
 
 async function fetchActivityData() {
   try {
