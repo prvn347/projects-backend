@@ -111,14 +111,16 @@ const updateTodo = () => {
       const targetTodo = jsonData.todos[id - 1];
       targetTodo.todo = orgs[4];
       const updatedData = JSON.stringify(jsonData, null, 2);
-      fs.writeFile(path, updatedData, (err, data) => {
+      fs.writeFile(path, updatedData, (err) => {
         if (err) {
           console.error(err);
         }
         console.log("Todo updated!");
       });
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 //update Status
@@ -131,7 +133,7 @@ const updateStatus = (status) => {
 
       targetTodo.status = status ? "DONE" : "IN PROGRESS";
       const updatedData = JSON.stringify(jsonData, null, 2);
-      fs.writeFile(path, updatedData, (err, data) => {
+      fs.writeFile(path, updatedData, (err) => {
         if (err) {
           console.error(err);
         }
@@ -146,19 +148,21 @@ const updateStatus = (status) => {
 const deleteTodo = () => {
   try {
     const id = orgs[3];
-    fs.readFile(path, "utf-8", (err, data) => {
+    fs.readFile(path, "utf-8", (data) => {
       const jsonData = JSON.parse(data);
 
       jsonData.todos.splice(id - 1, 1);
       const updatedData = JSON.stringify(jsonData, null, 2);
-      fs.writeFile(path, updatedData, (err, data) => {
+      fs.writeFile(path, updatedData, (err) => {
         if (err) {
           console.error(err);
         }
         console.log("Todo deleted!");
       });
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error(error);
+  }
 };
 //application
 

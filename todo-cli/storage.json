@@ -7,22 +7,6 @@
     },
     {
       "id": 2,
-      "todo": "hi",
-      "status": "DONE"
-    },
-    {
-      "id": 4,
-      "todo": "HI new here",
-      "status": "DONE"
-    },
-    {
-      "id": 5,
-      "todo": "you",
-      "status": "IN PROGRESS"
-    },
-    {
-      "id": 6,
-      "todo": "shfkd",
       "status": "IN PROGRESS"
     }
   ]
