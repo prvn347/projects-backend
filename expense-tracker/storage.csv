@@ -1,6 +1,4 @@
-ID; DATE;DESCRIPTION;EXPENSE
-1;12-2-12;flights tickets;1223
+ID; DATE;DESCRIPTION;EXPENSE(INR)
+1;18-08-24;buy tickets;1299
 
-
-2;13-2-12;hotel stay;550
-3;14-2-12;restaurant;120
+NaN;13-2-12;buy books;500

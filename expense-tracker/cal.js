@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Command } from "commander";
 const program = new Command();
 import fs from "fs";
@@ -11,26 +12,76 @@ const csvFilePath = path.join(__dirname, "storage.csv");
 //func to calculate expense
 const addExpense = (desc) => {
   try {
-    const newRows = [
-      ["2", "13-2-12", "hotel stay", "550"],
-      ["3", "14-2-12", "restaurant", "120"],
-    ];
+    let id;
+    fs.readFile(csvFilePath, (err, data) => {
+      const csvData = data.toString().split("\n");
+      const eleCsvData = csvData[csvData.length - 1].split(";");
+      id = parseInt(eleCsvData[0]);
 
-    const newCsvRows = newRows.map((row) => row.join(";")).join("\n");
-    const csvContentToAdd = `\n${newCsvRows}`;
+      const newRows = [[parseInt(id) + 1, "13-2-12", desc[0], desc[1]]];
 
-    fs.appendFile(csvFilePath, csvContentToAdd, (err) => {
-      if (err) {
-        console.error("Error appending to CSV file:", err);
-        return;
-      }
-      console.log("New rows added to CSV file successfully");
+      const newCsvRows = newRows.map((row) => row.join(";")).join("\n");
+      const csvContentToAdd = `\n${newCsvRows}`;
+
+      fs.appendFile(csvFilePath, csvContentToAdd, (err) => {
+        if (err) {
+          console.error("Error appending to CSV file:", err);
+          return;
+        }
+        console.log("New expenses added to CSV file successfully");
+      });
     });
   } catch (error) {
     console.error(error);
   }
 };
 
+//list expenses
+const listExpenses = () => {
+  try {
+    fs.readFile(csvFilePath, "utf-8", (err, data) => {
+      if (err) {
+        console.error("Error reading CSV file:", err);
+        return;
+      }
+
+      // Split the CSV data by new lines
+      const rows = data.split("\n").filter((row) => row.trim() !== "");
+
+      // Print each row with formatted columns
+      rows.forEach((row, index) => {
+        // Split row by semicolon
+        const columns = row.split(";");
+
+        // Align columns with padding
+        const id = columns[0].trim().padEnd(4, " ");
+        const date = columns[1].trim().padEnd(10, " ");
+        const description = columns[2].trim().padEnd(12, " ");
+        const amount = columns[3].trim().padStart(10, " ");
+
+        console.log(`# ${id} ${date} ${description} ${amount}`);
+      });
+    });
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
+//summery of expernses
+const summeryOfExpenses = () => {
+  try {
+    fs.readFile(csvFilePath, "utf-8", (err, data) => {
+      let cost;
+      const rows = data.split("\n").filter((row) => row.trim() !== "");
+      rows.forEach((row, index) => {
+        // Split row by semicolon
+        const columns = row.split(";");
+        cost = columns[3] += row[index][3];
+      });
+      console.log(cost);
+    });
+  } catch (error) {}
+};
 program
   .name("expense-tracker")
   .description("CLI to track expenses.")
@@ -49,13 +100,13 @@ program
       console.log(addExpense(desc));
     }
     if (options.delete) {
-      console.log(calculate("*", (p, v) => Number(p) * Number(v), numbers));
+      console.log(listExpenses(desc));
     }
     if (options.summery) {
-      console.log(calculate("/", (p, v) => Number(p) / Number(v), numbers));
+      console.log(summeryOfExpenses(desc));
     }
     if (options.list) {
-      console.log(calculate("-", (p, v) => Number(p) - Number(v), numbers));
+      console.log(listExpenses(desc));
     }
   });
 

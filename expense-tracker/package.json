@@ -10,6 +10,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "bin": {
+    "expense-tracker": "./cal.js"
+  },
   "dependencies": {
     "commander": "^12.1.0",
     "csv": "^6.3.10",
