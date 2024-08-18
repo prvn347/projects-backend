@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 //intializing cli
 var fs = require("fs");
-const path = "storage.json";
+const path = require("path");
+const pathName = path.join(__dirname, "storage.json");
+// const pathName = "storage.json";
 const orgs = process.argv;
 
 const initialCliValue = `Hello welcome to your cmd todo list.
@@ -24,7 +26,7 @@ const startApp = () => {
 //adding a todo
 const addTodo = () => {
   try {
-    fs.readFile(path, "utf-8", (err, data) => {
+    fs.readFile(pathName, "utf-8", (err, data) => {
       let updatedJson;
       let jsonData;
       jsonData = JSON.parse(data);
@@ -38,7 +40,7 @@ const addTodo = () => {
       jsonData.todos.push(updatedJson);
       const updatedData = JSON.stringify(jsonData, null, 2);
 
-      fs.writeFile(path, updatedData, (err) => {
+      fs.writeFile(pathName, updatedData, (err) => {
         if (err) {
           console.error(err);
         } else {
@@ -55,7 +57,7 @@ const addTodo = () => {
 const getAllTodos = () => {
   try {
     const filter = orgs[3];
-    fs.readFile(path, (err, data) => {
+    fs.readFile(pathName, (err, data) => {
       const todos = JSON.parse(data);
 
       if (!Array.isArray(todos.todos)) {
@@ -106,12 +108,12 @@ const updateTodo = () => {
   try {
     const id = orgs[3];
     console.log("id is " + id);
-    fs.readFile(path, "utf-8", (err, data) => {
+    fs.readFile(pathName, "utf-8", (err, data) => {
       const jsonData = JSON.parse(data);
       const targetTodo = jsonData.todos[id - 1];
       targetTodo.todo = orgs[4];
       const updatedData = JSON.stringify(jsonData, null, 2);
-      fs.writeFile(path, updatedData, (err) => {
+      fs.writeFile(pathName, updatedData, (err) => {
         if (err) {
           console.error(err);
         }
@@ -127,13 +129,13 @@ const updateTodo = () => {
 const updateStatus = (status) => {
   try {
     const id = orgs[3];
-    fs.readFile(path, "utf-8", (err, data) => {
+    fs.readFile(pathName, "utf-8", (err, data) => {
       const jsonData = JSON.parse(data);
       const targetTodo = jsonData.todos[id - 1];
 
       targetTodo.status = status ? "DONE" : "IN PROGRESS";
       const updatedData = JSON.stringify(jsonData, null, 2);
-      fs.writeFile(path, updatedData, (err) => {
+      fs.writeFile(pathName, updatedData, (err) => {
         if (err) {
           console.error(err);
         }
@@ -148,12 +150,12 @@ const updateStatus = (status) => {
 const deleteTodo = () => {
   try {
     const id = orgs[3];
-    fs.readFile(path, "utf-8", (data) => {
+    fs.readFile(pathName, "utf-8", (data) => {
       const jsonData = JSON.parse(data);
 
       jsonData.todos.splice(id - 1, 1);
       const updatedData = JSON.stringify(jsonData, null, 2);
-      fs.writeFile(path, updatedData, (err) => {
+      fs.writeFile(pathName, updatedData, (err) => {
         if (err) {
           console.error(err);
         }
