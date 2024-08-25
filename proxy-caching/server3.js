@@ -13,7 +13,7 @@ client.on("error", () => {
 app.use(async (req, res) => {
   try {
     const cacheKey = req.originalUrl;
-    console.log(cacheKey);
+
     let cachedResponse = await client.get(cacheKey);
     if (cachedResponse) {
       console.log(`Cache HIT: ${cacheKey}`);

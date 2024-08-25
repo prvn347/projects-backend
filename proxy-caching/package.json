@@ -2,7 +2,7 @@
   "name": "proxy-caching",
   "version": "1.0.0",
   "description": "",
-  "type": "module",
+  "type": "commonjs",
   "main": "index.js",
   "bin": {
     "caching-proxy": "./server3.js"
