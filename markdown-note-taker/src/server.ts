@@ -2,6 +2,10 @@ import express, { Request, Response } from "express";
 import multer from "multer";
 import fs from "fs/promises";
 import textgears from "textgears-api";
+import dotenv from "dotenv";
+import showdown from "showdown";
+const converter = new showdown.Converter();
+dotenv.config();
 // import path from "path";
 const app = express();
 
@@ -46,7 +50,7 @@ app.post(
         language: "en-US",
         ai: false,
       });
-      console.log(fileContent);
+
       await textgearsApi
         .checkGrammar(fileContent)
         .then((data) => {
@@ -57,9 +61,7 @@ app.post(
               error.better.join(", ")
             );
             suggestion.push(
-              "Error: %s. Suggestions: %s",
-              error.bad,
-              error.better.join(", ")
+              `Error: ${error.bad}. Suggestions:${error.better.join(", ")} `
             );
           }
         })
@@ -71,7 +73,12 @@ app.post(
         fileContent,
         suggestions: suggestion,
       });
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        errro: error,
+      });
+    }
   }
 );
 
@@ -100,8 +107,48 @@ app.post(
   }
 );
 
-app.post("/list", async () => {});
+app.post("/notes/list", async (req: Request, res: Response) => {
+  try {
+    const files = await fs.readdir(uploadDir);
+    console.log("\nCurrent directory filenames:");
+    files.forEach((file: string) => {
+      console.log(file);
+    });
 
-app.post("/returnHtml", async () => {});
+    res.json({
+      files: files,
+    });
+  } catch (error) {
+    console.error("Error while reading the directory", error);
+    res.status(500).json({
+      error: "Failed to read directory",
+    });
+  }
+});
+
+app.post(
+  "/notes/render",
+  upload.single("file"),
+  async (req: Request, res: Response) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    try {
+      const fileContent = await fs.readFile(
+        uploadDir + "/" + req.file.filename,
+        "utf-8"
+      );
+      const html = converter.makeHtml(fileContent);
+      console.log(html);
+      res.status(200).json({
+        status: "render completed",
+        html: html,
+      });
+    } catch (error) {
+      console.error("Error reading uploaded file:", error);
+      res.status(500).json({ error: "Error processing file" });
+    }
+  }
+);
 
 app.listen(3000);

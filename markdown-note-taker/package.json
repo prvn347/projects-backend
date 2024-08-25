@@ -11,11 +11,15 @@
   "license": "ISC",
   "dependencies": {
     "@types/express": "^4.17.21",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "multer": "^1.4.5-lts.1",
+    "react-showdown": "^2.3.1",
+    "showdown": "^2.1.0",
     "textgears-api": "^1.1.11"
   },
   "devDependencies": {
-    "@types/multer": "^1.4.12"
+    "@types/multer": "^1.4.12",
+    "@types/showdown": "^2.0.6"
   }
 }
