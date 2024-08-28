@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,43 +6,42 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model User {
-  id         Int      @id @default(autoincrement())
-  username   String   @unique
-  email      String   @unique
+  id         Int       @id @default(autoincrement())
+  username   String    @unique
+  email      String    @unique
   password   String
   name       String
-  Workout    Workout[]
-  createdAt  DateTime @default(now())
-
+  workouts   Workout[]
+  createdAt  DateTime  @default(now())
 }
+
 model Workout {
-  id Int @id @default(autoincrement())
-  name String
-  Excercise Excercise[]
-  userId Int
-  schedule DateTime 
-  User User @relation(fields: [userId],references: [id])
-  
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String?
+  exercises   Exercise[]
+  userId      Int
+  schedule    DateTime
+  User        User       @relation(fields: [userId], references: [id])
 }
-model Excercise {
-  id Int @id @default(autoincrement())
-  name String
+
+model Exercise {
+  id          Int        @id @default(autoincrement())
+  name        String
   description String
-  sets Int
-  reps Int
-  rest Int
-  workoutId Int
-  Workout Workout @relation(fields: [workoutId],references: [id])
-  category Category
-
-
+  sets        Int
+  reps        Int
+  rest        Int
+  workoutId   Int
+  Workout     Workout    @relation(fields: [workoutId], references: [id])
+  category    Category
 }
 
 enum Category {
   FLEXIBILITY
   STRENGTH
-  ENDURENCE
+  ENDURANCE
   AEROBIC
 }
-
