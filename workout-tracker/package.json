@@ -8,6 +8,9 @@
   },
   "keywords": [],
   "author": "",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.19.0",

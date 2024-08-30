@@ -18,27 +18,33 @@ model User {
 }
 
 model Workout {
-  id          Int        @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
   name        String
   description String?
-  exercises   Exercise[]
-  userId      Int
   schedule    DateTime
-  User        User       @relation(fields: [userId], references: [id])
+  userId      Int
+  User        User           @relation(fields: [userId], references: [id])
+  exercises   WorkoutExercise[]
 }
 
 model Exercise {
-  id          Int        @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
   name        String
   description String
   sets        Int
   reps        Int
   rest        Int
-  workoutId   Int
-  Workout     Workout    @relation(fields: [workoutId], references: [id])
   category    Category
+  workouts    WorkoutExercise[]
 }
 
+model WorkoutExercise {
+  id          Int        @id @default(autoincrement())
+  workoutId   Int
+  exerciseId  Int
+  Workout     Workout    @relation(fields: [workoutId], references: [id])
+  Exercise    Exercise   @relation(fields: [exerciseId], references: [id])
+}
 enum Category {
   FLEXIBILITY
   STRENGTH
