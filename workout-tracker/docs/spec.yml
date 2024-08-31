@@ -1,0 +1,222 @@
+openapi: 3.0.0
+info:
+  title: Workout-tracker API
+  description: API to manage workout plans
+  version: "1.0.0"
+servers:
+  - url: http://localhost:4000
+paths:
+  /workout/create:
+    post:
+      summary: Create a new workout plan
+      description: Create a new workout plan for a user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkoutCreate"
+      responses:
+        "200":
+          description: Workout created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workout"
+        "403":
+          description: Internal error
+        "501":
+          description: Server error
+
+  /workout/update:
+    post:
+      summary: Update an existing workout plan
+      description: Update a workout plan with new data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkoutUpdate"
+      responses:
+        "200":
+          description: Workout updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workout"
+        "403":
+          description: Internal error
+        "501":
+          description: Server error
+
+  /workout/delete/{workoutId}:
+    post:
+      summary: Delete a workout plan
+      description: Deletes a specific workout plan for a user.
+      parameters:
+        - in: path
+          name: workoutId
+          required: true
+          schema:
+            type: integer
+          description: The ID of the workout to delete
+      responses:
+        "200":
+          description: Workout deleted successfully
+        "403":
+          description: Internal error
+        "501":
+          description: Server error
+
+  /workout/note/{id}:
+    post:
+      summary: Add a note to a workout
+      description: Adds a note to a specific workout.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the workout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  description: The note to add
+      responses:
+        "200":
+          description: Note added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workout"
+        "403":
+          description: Internal error
+        "501":
+          description: Server error
+
+  /workout/list:
+    get:
+      summary: List workouts
+      description: List all workouts for a user.
+      responses:
+        "200":
+          description: List of workouts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Workout"
+        "403":
+          description: Internal error
+        "501":
+          description: Server error
+
+components:
+  schemas:
+    Workout:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier of the workout
+        name:
+          type: string
+          description: The name of the workout
+        description:
+          type: string
+          description: Description of the workout
+        note:
+          type: string
+          description: Note associated with the workout
+        userId:
+          type: integer
+          description: The ID of the user who created the workout
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/Exercise"
+        schedules:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkoutSchedule"
+    WorkoutCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the workout
+        description:
+          type: string
+          description: Description of the workout
+        exerciseIds:
+          type: array
+          items:
+            type: integer
+          description: List of exercise IDs
+    WorkoutUpdate:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The ID of the workout to update
+        name:
+          type: string
+          description: The new name of the workout
+        description:
+          type: string
+          description: The new description of the workout
+        exerciseIds:
+          type: array
+          items:
+            type: integer
+          description: List of new exercise IDs
+    Exercise:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier of the exercise
+        name:
+          type: string
+          description: The name of the exercise
+        description:
+          type: string
+          description: Description of the exercise
+        sets:
+          type: integer
+          description: Number of sets
+        reps:
+          type: integer
+          description: Number of repetitions
+        rest:
+          type: integer
+          description: Rest time in seconds
+        category:
+          type: string
+          enum: [FLEXIBILITY, STRENGTH, ENDURANCE, AEROBIC]
+          description: The category of the exercise
+    WorkoutSchedule:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier of the workout schedule
+        scheduleTime:
+          type: string
+          format: date-time
+          description: Specific date and time for the workout
+        isRecurring:
+          type: boolean
+          description: Indicates if the workout is recurring
+        recurrenceRule:
+          type: string
+          description: Recurrence rules in iCal format
