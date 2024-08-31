@@ -17,4 +17,25 @@ export class workoutControllers {
       return new Error("error while updating workout.");
     }
   }
+  async deleteWorkout(workoutId: number, userId: number) {
+    try {
+      return await this.workoutService.deleteWorkout(workoutId, userId);
+    } catch (error) {
+      return new Error("error while deleting workout.");
+    }
+  }
+  async addNote(workoutId: number, note: { note: string }) {
+    try {
+      return await this.workoutService.addNote(workoutId, note);
+    } catch (error) {
+      return new Error("error while deleting workout.");
+    }
+  }
+  async listWorkout() {
+    try {
+      return await this.workoutService.listWorkouts();
+    } catch (error) {
+      return new Error("error while listing workout.");
+    }
+  }
 }

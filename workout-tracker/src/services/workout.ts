@@ -14,14 +14,19 @@ export class workoutService {
               exerciseId: id,
             })),
           },
-          schedule: new Date().toString(),
+          schedules: {
+            create: {
+              scheduleTime: new Date(),
+            },
+          },
           userId: userId,
         },
         include: {
           exercises: true,
+          schedules: true,
         },
       });
-      console.log(workout);
+
       return workout;
     } catch (error) {
       console.error(error);
@@ -36,7 +41,11 @@ export class workoutService {
         data: {
           name: workoutData.name,
           description: workoutData.description,
-          schedule: new Date(),
+          schedules: {
+            create: {
+              scheduleTime: new Date(),
+            },
+          },
         },
       });
 
@@ -70,6 +79,60 @@ export class workoutService {
     } catch (error) {
       console.error(error);
       throw new Error("errror while updating workout plan ");
+    }
+  }
+  async deleteWorkout(workoutId: number, userId: number) {
+    console.log(workoutId, userId);
+    try {
+      const traansaction = await prisma.$transaction(async (tx) => {
+        await prisma.workoutExercise.deleteMany({
+          where: {
+            workoutId: workoutId,
+          },
+        });
+        await prisma.workout.delete({
+          where: {
+            id: workoutId,
+            userId: userId,
+          },
+        });
+      });
+
+      console.log("deletion complete");
+
+      return traansaction;
+    } catch (error) {
+      console.error(error);
+      throw new Error("errror while deleting workout plan ");
+    }
+  }
+  async addNote(workoutId: number, note: { note: string }) {
+    try {
+      const result = await prisma.workout.update({
+        where: {
+          id: workoutId,
+        },
+        data: note,
+      });
+      return result;
+    } catch (error) {
+      console.error(error);
+      throw new Error("errror while adding note to  workout plan ");
+    }
+  }
+  async listWorkouts() {
+    try {
+      const result = await prisma.workoutSchedule.findMany({
+        where: {
+          scheduleTime: {
+            lte: new Date(),
+          },
+        },
+      });
+      return result;
+    } catch (error) {
+      console.error(error);
+      throw new Error("errror while adding note to  workout plan ");
     }
   }
 }
