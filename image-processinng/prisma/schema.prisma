@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  username   String    @unique
+  email      String    @unique
+  password   String
+  name       String
+  images     Image[]
+  createdAt  DateTime  @default(now())
+}
+
+model Image {
+  id Int @id @default(autoincrement())
+  userId Int
+  name String
+  desc String?
+  url String
+  transformation  Transformation[]
+  User User @relation(fields: [userId],references: [id])
+}
+
+model Transformation{
+  id Int @id @default(autoincrement())
+  imageId Int
+  transformationType TransformationType
+  transformationMeta TransformationMeta[]
+Image Image @relation(fields: [imageId],references: [id])
+
+
+
+}
+
+model TransformationMeta {
+  id Int @id @default(autoincrement())
+  metaData String
+  transformationId Int
+  Transformation  Transformation @relation(fields: [transformationId],references: [id])
+
+
+}
+
+
+enum TransformationType {
+  RESIZE
+  CROP
+  ROTATE
+  WATERMARK
+  FLIP
+  MIRROR
+  COMPRESS
+  FORMAT
+  FILTER
+}
