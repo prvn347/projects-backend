@@ -14,45 +14,36 @@ datasource db {
 }
 
 model User {
-  id         Int       @id @default(autoincrement())
-  username   String    @unique
-  email      String    @unique
+  id         Int      @id @default(autoincrement())
+  username   String   @unique
+  email      String   @unique
   password   String
   name       String
   images     Image[]
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime @default(now())
 }
 
 model Image {
-  id Int @id @default(autoincrement())
-  userId Int
-  name String
-  desc String?
-  url String
-  transformation  Transformation[]
-  User User @relation(fields: [userId],references: [id])
+  id               Int              @id @default(autoincrement())
+  userId           Int
+  name             String
+  description      String?
+  url              String           @unique
+  transformations  Transformation[]
+  user             User             @relation(fields: [userId], references: [id])
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 }
 
-model Transformation{
-  id Int @id @default(autoincrement())
-  imageId Int
+model Transformation {
+  id                Int                @id @default(autoincrement())
+  imageId           Int
   transformationType TransformationType
-  transformationMeta TransformationMeta[]
-Image Image @relation(fields: [imageId],references: [id])
-
-
-
+  meta              String             
+  image             Image              @relation(fields: [imageId], references: [id])
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
-
-model TransformationMeta {
-  id Int @id @default(autoincrement())
-  metaData String
-  transformationId Int
-  Transformation  Transformation @relation(fields: [transformationId],references: [id])
-
-
-}
-
 
 enum TransformationType {
   RESIZE
