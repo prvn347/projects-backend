@@ -8,10 +8,6 @@ import { imageController } from "../controllers/image";
 const router = Router();
 
 router.use(admin);
-const supabase = createClient(
-  process.env.SUPABASE_URL || "",
-  process.env.SUPABASE_KEY || ""
-);
 
 const uploadDir = "././uploads"; // Adjust path as needed
 async function createUploadDir() {
@@ -49,38 +45,20 @@ router.post(
     const userId = req.user;
     try {
       const filePath = `${uploadDir}/${req.file.filename}`;
-      const fileContent = await fs.readFile(filePath);
-
-      const { data, error } = await supabase.storage
-        .from("images")
-        .upload(req.file.filename, fileContent, {
-          contentType: req.file.mimetype,
-        });
-
-      if (error) {
-        return res.status(500).json({
-          error: "Failed to upload file to Supabase",
-
-          details: error.message,
-        });
-      }
-      const { data: publicData } = supabase.storage
-        .from("images")
-        .getPublicUrl(req.file.filename);
-
-      await fs.unlink(filePath);
 
       const result = await imageControllers.uploadImage(
         parseInt(userId),
-        req.file.filename,
-        publicData.publicUrl
+        filePath,
+        req.file.filename
       );
-
+      if (result instanceof Error) {
+        return res
+          .status(403)
+          .json({ error: "Error while uploading file try again." });
+      }
       res.status(201).json({
         status: "File uploaded successfully",
         filename: req.file.filename,
-        publicURL: publicData.publicUrl,
-        supabaseMeta: data,
         result,
       });
     } catch (error) {
@@ -88,9 +66,26 @@ router.post(
     }
   }
 );
-router.post("/:id/transform", async () => {
+router.post("/:id/transform", async (req: AuthRequest, res: Response) => {
+  const imageId = req.params.id;
+  console.log(imageId);
+
+  const userId = req.user;
+
   try {
-  } catch (error) {}
+    const filePath = `${uploadDir}`;
+
+    const result = await imageControllers.transformImage(
+      parseInt(imageId),
+      filePath
+    );
+
+    res.status(201).json({
+      result,
+    });
+  } catch (error) {
+    res.status(403).json({ error: error });
+  }
 });
 
 router.post("/:id", async () => {

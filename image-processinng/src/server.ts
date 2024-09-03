@@ -9,7 +9,6 @@ export const startServer = () => {
   app.use(cors());
   app.use(express.urlencoded({ extended: false }));
   initializeRoutes(app);
-  console.log("initialized routes");
   app.listen(4000, () => {
     console.log("Server is running on PORT 4000");
   });
