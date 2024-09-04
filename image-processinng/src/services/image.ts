@@ -138,4 +138,36 @@ export class imageService {
       throw new Error("error:" + error);
     }
   }
+  async findImage(imageId: number) {
+    try {
+      const image = await prisma.image.findFirst({
+        where: {
+          id: imageId,
+        },
+      });
+
+      return image;
+    } catch (error) {
+      console.error("error while getting image" + error);
+      throw new Error("error:" + error);
+    }
+  }
+  async getImages(initRange: number, limitRange: number) {
+    try {
+      const transaction = await prisma.$transaction(async (tx) => {
+        const count = await tx.image.count();
+        const result = await tx.image.findMany({
+          skip: initRange, // Skip this many records
+          take: limitRange, // Take this many records after skipping
+        });
+
+        return { count, images: result };
+      });
+
+      return transaction;
+    } catch (error) {
+      console.error("error while getting range  images" + error);
+      throw new Error("error:" + error);
+    }
+  }
 }

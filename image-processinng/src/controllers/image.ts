@@ -42,4 +42,34 @@ export class imageController {
       }
     }
   }
+  async getImage(imageId: number) {
+    try {
+      return await this.imageService.findImage(imageId);
+    } catch (error) {
+      if (error instanceof Error) {
+        // Log or handle the specific error message
+        console.error("Error while transforming image:", error.message);
+        return new Error("Error while transforming data: " + error.message);
+      } else {
+        // Handle non-Error objects
+        console.error("Unknown error occurred:", error);
+        return new Error("An unknown error occurred while transforming data.");
+      }
+    }
+  }
+  async getRangeImager(initRange: number, limitRange: number) {
+    try {
+      return await this.imageService.getImages(initRange, limitRange);
+    } catch (error) {
+      if (error instanceof Error) {
+        // Log or handle the specific error message
+        console.error("Error while transforming image:", error.message);
+        return new Error("Error while transforming data: " + error.message);
+      } else {
+        // Handle non-Error objects
+        console.error("Unknown error occurred:", error);
+        return new Error("An unknown error occurred while transforming data.");
+      }
+    }
+  }
 }

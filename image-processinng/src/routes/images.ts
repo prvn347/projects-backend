@@ -1,4 +1,4 @@
-import { Response, Router } from "express";
+import { Request, Response, Router } from "express";
 import { admin, AuthRequest } from "../middleware/admin";
 import multer from "multer";
 import { imageController } from "../controllers/image";
@@ -70,13 +70,42 @@ router.post("/:id/transform", async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.post("/:id", async () => {
+router.post("/:id", async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    const imageId = req.params.id;
+    const result = await imageControllers.getImage(parseInt(imageId));
+    if (result instanceof Error) {
+      return res
+        .status(403)
+        .json({ error: "Error while transforming file try again." });
+    }
+    res.status(201).json({
+      result,
+    });
+  } catch (error) {
+    res.status(403).json({ error: error });
+  }
 });
-router.post("/", async () => {
+router.get("", async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    const initialRange = req.query.page as string;
+    const limitRange = req.query.limit as string;
+    console.log(initialRange, limitRange);
+    const result = await imageControllers.getRangeImager(
+      parseInt(initialRange),
+      parseInt(limitRange)
+    );
+    if (result instanceof Error) {
+      return res
+        .status(403)
+        .json({ error: "Error while transforming file try again." });
+    }
+    res.status(201).json({
+      result,
+    });
+  } catch (error) {
+    res.status(403).json({ error: error });
+  }
 });
 
 export default router;
