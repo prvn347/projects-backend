@@ -1,4 +1,4 @@
-import z, { nullable, number, optional } from "zod";
+import z, { number } from "zod";
 export interface userSignupInputType {
   email: string;
   username: string;

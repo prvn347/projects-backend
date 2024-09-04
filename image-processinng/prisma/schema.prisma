@@ -38,21 +38,11 @@ model Image {
 model Transformation {
   id                Int                @id @default(autoincrement())
   imageId           Int
-  transformationType TransformationType
-  meta              String             
+  name              String
+  transformationMeta String  
+  signedUrl          String @default("")          
   image             Image              @relation(fields: [imageId], references: [id])
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 }
 
-enum TransformationType {
-  RESIZE
-  CROP
-  ROTATE
-  WATERMARK
-  FLIP
-  MIRROR
-  COMPRESS
-  FORMAT
-  FILTER
-}

@@ -1,10 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import { PrismaClient } from "@prisma/client";
-import { image } from "../types/imageType";
 import fs from "fs/promises";
-import sharp, { fit } from "sharp";
-import { request } from "express";
 import axios from "axios";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
+import { Transformations } from "../types/transformType";
+import { TransfromService } from "../utils/processingUtils";
 const prisma = new PrismaClient();
 
 const supabase = createClient(
@@ -16,7 +17,7 @@ export class imageService {
     try {
       const fileContent = await fs.readFile(filePath);
       const transaction = await prisma.$transaction(async (tx) => {
-        const { data, error } = await supabase.storage
+        const { data } = await supabase.storage
           .from("images")
           .upload(fileName, fileContent, {
             contentType: "jpg",
@@ -44,63 +45,92 @@ export class imageService {
     }
   }
 
-  async transfromImage(imageId: number, filePath: string) {
+  async transfromImage(
+    imageId: number,
+    filePath: string,
+    transformMeta: Transformations
+  ) {
     try {
-      const transaction = await prisma.$transaction(async (tx) => {
-        const findUrl = await tx.image.findFirst({
-          where: {
-            id: imageId,
-          },
-        });
-        if (!findUrl) {
-          throw new Error(
-            `Image with ID ${imageId} not found in the database.`
-          );
-        }
-        const bucketName = "images";
-        const expiresIn = 60;
-
-        const path = findUrl?.name;
-        const { data, error } = await supabase.storage
-          .from(bucketName)
-          .createSignedUrl(path, expiresIn);
-
-        const url = data?.signedUrl;
-
-        const input = (await axios({ url: url, responseType: "arraybuffer" }))
-          .data as Buffer;
-        const shrp = await sharp(input)
-          .resize({ width: 1920, height: 1080 })
-          .toFile(`uploads/${findUrl.name}`, async (err, info) => {
-            if (err) {
-              console.error("Error during image processing:", err);
-            } else {
-              console.log("Image processing completed:", info);
-              const fileContent = await fs.readFile(
-                `${filePath}/${findUrl.name}`
-              );
-              const resizedImage = await supabase.storage
-                .from(bucketName)
-                .upload(
-                  `${findUrl.userId}/resized-${findUrl.name}`,
-                  fileContent
-                );
-              console.log(resizedImage.data);
-            }
+      const transaction = await prisma.$transaction(
+        async (tx) => {
+          const findUrl = await tx.image.findFirst({
+            where: { id: imageId },
           });
 
-        const resizeUrl = await supabase.storage
-          .from(bucketName)
-          .createSignedUrl(
-            `${findUrl.userId}/resized-${findUrl.name}`,
-            expiresIn
+          if (!findUrl) {
+            throw new Error(
+              `Image with ID ${imageId} not found in the database.`
+            );
+          }
+
+          const bucketName = "images";
+          const expiresIn = 60;
+
+          const { data: signedUrlData, error: signedUrlError } =
+            await supabase.storage
+              .from(bucketName)
+              .createSignedUrl(findUrl.name, expiresIn);
+
+          if (signedUrlError || !signedUrlData?.signedUrl) {
+            throw new Error("Failed to create signed URL for the image.");
+          }
+          const originalImageUrl = signedUrlData.signedUrl;
+
+          // Download the image
+          const { data: inputBuffer } = await axios.get<Buffer>(
+            originalImageUrl,
+            {
+              responseType: "arraybuffer",
+            }
           );
+          const uniqueName = `${uuidv4()}-${findUrl.name}`;
+          const outputPath = path.join(filePath, uniqueName);
+          await TransfromService(transformMeta, inputBuffer, outputPath);
 
-        const resizedUrl = resizeUrl.data?.signedUrl;
-        console.log(resizedUrl);
+          const fileContent = await fs.readFile(outputPath);
 
-        return resizedUrl;
-      });
+          // Upload the resized image
+          const uploadPath = `${findUrl.userId}/edited-${uniqueName}`;
+          const { error: uploadError } = await supabase.storage
+            .from(bucketName)
+            .upload(uploadPath, fileContent);
+
+          if (uploadError) {
+            throw new Error(
+              "Failed to upload resized image to Supabase storage."
+            );
+          }
+          await supabase.storage
+            .from(bucketName)
+            .createSignedUrl(
+              `${findUrl.userId}/edited-${uniqueName}`,
+              expiresIn
+            );
+
+          const { data: resizeUrlData, error: resizeUrlError } =
+            await supabase.storage
+              .from(bucketName)
+              .createSignedUrl(uploadPath, expiresIn);
+
+          if (resizeUrlError || !resizeUrlData?.signedUrl) {
+            throw new Error(
+              "Failed to create signed URL for the resized image."
+            );
+          }
+          await fs.unlink(outputPath);
+          const dbTransform = await tx.transformation.create({
+            data: {
+              name: uploadPath,
+              imageId: imageId,
+              transformationMeta: JSON.stringify(transformMeta),
+              signedUrl: resizeUrlData.signedUrl,
+            },
+          });
+
+          return dbTransform;
+        },
+        { timeout: 10000 }
+      );
 
       return transaction;
     } catch (error) {
