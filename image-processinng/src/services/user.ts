@@ -1,8 +1,8 @@
 import { userSigninInputType, userSignupInputType } from "../types/userTypes";
 import bcrypt from "bcryptjs";
-import { PrismaClient } from "@prisma/client";
+
 import { generateToken } from "../utils/jwtUtils";
-const prisma = new PrismaClient();
+import { prisma } from "../db";
 export class userService {
   async createUser(userData: userSignupInputType) {
     try {
@@ -20,6 +20,8 @@ export class userService {
 
       return { user, token };
     } catch (error) {
+      console.error(error);
+
       return new Error("error while db user creation");
     }
   }
@@ -45,6 +47,7 @@ export class userService {
         return { user, token };
       }
     } catch (error) {
+      console.error(error);
       throw new Error("error while finding user");
     }
   }

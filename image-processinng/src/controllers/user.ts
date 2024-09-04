@@ -11,6 +11,8 @@ export class userController {
       userInputParserVarifier.validateUserSignupInput(userData);
       return await this.userService.createUser(userData);
     } catch (error) {
+      console.error(error);
+
       return new Error("error while creating user.");
     }
   }
@@ -20,6 +22,8 @@ export class userController {
       userInputParserVarifier.validateUserSigninInput(userData);
       return await this.userService.findUser(userData);
     } catch (error) {
+      console.error(error);
+
       return new Error("error while creating user.");
     }
   }
