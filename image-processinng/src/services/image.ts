@@ -1,12 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
-import { PrismaClient } from "@prisma/client";
 import fs from "fs/promises";
 import axios from "axios";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { Transformations } from "../types/transformType";
 import { TransfromService } from "../utils/processingUtils";
-const prisma = new PrismaClient();
+import { prisma } from "../db";
 
 const supabase = createClient(
   process.env.SUPABASE_URL || "",
