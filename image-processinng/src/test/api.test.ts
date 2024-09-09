@@ -2,31 +2,23 @@ import request from "supertest";
 import { describe, expect, test, vi } from "vitest";
 import { app } from "../server";
 
-import fs from "fs/promises";
 vi.mock("../db");
-vi.mock("@supabase/supabase-js", () => ({
-  createClient: vi.fn().mockReturnValue({
+vi.mock("../storage", () => ({
+  supabase: {
     storage: {
-      from: vi.fn().mockReturnValue({
-        upload: vi.fn(),
-        getPublicUrl: vi.fn(),
-        createSignedUrl: vi.fn(),
-      }),
+      from: vi.fn(),
+      getPublicUrl: vi.fn(),
+      upload: vi.fn(),
+      createSignedUrl: vi.fn(),
     },
-  }),
+  },
 }));
-vi.mock("axios", () => ({
-  get: vi.fn(),
-}));
-vi.mock("fs/promises", () => ({
-  readFile: vi.fn(),
-  unlink: vi.fn(),
-}));
+
 // describe("POST /user/signup", () => {
 //   test("should return 201 and user created!", async () => {
 //     const res = await request(app).post("/user/signup").send({
-//       email: "prsdvnsssj@gmail.com",
-//       username: "jsfdssdsflaj222",
+//       email: "psrsdvnnsssj@gmail.com",
+//       username: "jssfdssdsflaj222",
 //       password: "alssdfjsdflk",
 //       name: "pravsin",
 //     });
@@ -35,27 +27,33 @@ vi.mock("fs/promises", () => ({
 //   });
 // });
 
-// describe("POST /user/signin", () => {
-//   test("should return 201 status code and user data", async () => {
-//     const res = await request(app).post("/user/signin").send({
-//       email: "prainssssssji@gmail.com",
-//       password: "passswordsd",
-//     });
-
-//     expect(res.statusCode).toBe(201);
-//     expect(res.body.user.id).toBe(11);
-//   });
-// });
-
-describe("POST /image/", () => {
-  test("shoudl return 201 and image meta data", async () => {
-    const filePath = `${__dirname}/name.png`;
-
-    console.log(filePath);
-    const fileContent = await fs.readFile(filePath);
-    const res = await request(app).post("/image/").send(3).attach("file", fileContent);
+describe("POST /user/signin", () => {
+  test("should return 201 status code and user data", async () => {
+    const res = await request(app).post("/user/signin").send({
+      email: "psrsdvnnsssj@gmail.com",
+      password: "alssdfjsdflk",
+    });
 
     expect(res.statusCode).toBe(201);
-    expect(res.body.status).toBe("File uploaded successfully");
+    expect(res.body.user.id).toBe(1);
+  });
+});
+
+describe(" POST /image/:id/transform", () => {
+  test("should return the transform signed url", async () => {
+    const res = await request(app)
+      .post("/image/1/transform")
+      .set(
+        "Cookie",
+        "token=eyJhbGciOiJIUzI1NiJ9.Nw.LOTqSiU2qyaqXoAZZ3ClHemLdi9RVBNNgRbEZxIMYw4; Path=/; Secure; HttpOnly; Expires=Mon, 09 Sep 2024 08:21:29 GMT;"
+      )
+      .send({
+        resize: {
+          width: 400,
+          height: 500,
+        },
+      });
+    expect(res.body.result.imageId).toBe(1);
+    expect(res.statusCode).toBe(201);
   });
 });

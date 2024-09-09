@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
 import fs from "fs/promises";
 import axios from "axios";
 import path from "path";
@@ -6,35 +6,38 @@ import { v4 as uuidv4 } from "uuid";
 import { Transformations } from "../types/transformType";
 import { TransfromService } from "../utils/processingUtils";
 import { prisma } from "../db";
-
-const supabase = createClient(
-  process.env.SUPABASE_URL || "",
-  process.env.SUPABASE_KEY || ""
-);
+import supabase from "../storage";
+// const supabase = createClient(
+//   process.env.SUPABASE_URL || "",
+//   process.env.SUPABASE_KEY || ""
+// );
 export class imageService {
   async uploadImage(userId: number, filePath: string, fileName: string) {
     try {
       const fileContent = await fs.readFile(filePath);
-      const transaction = await prisma.$transaction(async (tx) => {
-        const { data } = await supabase.storage
-          .from("images")
-          .upload(fileName, fileContent, {
-            contentType: "jpg",
+      const transaction = await prisma.$transaction(
+        async (tx) => {
+          const { data } = await supabase.storage
+            .from("images")
+            .upload(fileName, fileContent, {
+              contentType: "jpg",
+            });
+          const { data: publicData } = supabase.storage
+            .from("images")
+            .getPublicUrl(fileName);
+
+          const image = await tx.image.create({
+            data: {
+              userId: userId,
+              name: fileName,
+              url: publicData.publicUrl,
+            },
           });
-        const { data: publicData } = supabase.storage
-          .from("images")
-          .getPublicUrl(fileName);
 
-        const image = await tx.image.create({
-          data: {
-            userId: userId,
-            name: fileName,
-            url: publicData.publicUrl,
-          },
-        });
-
-        return { image, data };
-      });
+          return { image, data };
+        },
+        { timeout: 10000 }
+      );
 
       await fs.unlink(filePath);
       return transaction;
